@@ -120,7 +120,7 @@ Si vous utilisez Visual Studio Code, vous pouvez installer une [extension offici
 
 Si vous préférez un **client graphique de bureau**, vous pouvez installer [Compass](https://www.mongodb.com/products/tools/compass), un outil officiel de **MongoDB**. 
 
-## Pour arreter les contenreurs
+## Pour arreter les conteneurs
 
 Si vous souhaitez arrêter les conteneurs :
 
