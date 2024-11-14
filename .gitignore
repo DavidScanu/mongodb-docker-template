@@ -1,0 +1,22 @@
+# Fichiers spécifiques à MongoDB
+data/
+*.log
+
+# Dossiers de base de données MongoDB générés
+/mongodb/data/
+*.lock
+
+# Fichiers temporaires
+tmp/
+*.tmp
+
+# Fichiers de configuration du système et de l'éditeur
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Ignorer les node_modules si le projet contient du code JavaScript
+node_modules/
