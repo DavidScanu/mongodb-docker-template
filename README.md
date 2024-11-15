@@ -7,7 +7,7 @@ Deux applications sont lancées par le fichier Docker Compose :
 - Une instance MongoDB
 - [mongo-express](https://github.com/mongo-express/mongo-express) qui est une interface d'administration MongoDB dans le navigateur.
 
-Lors de la création du conteneur MongoDB, le fichier `/mongodb/initdb.d/mongo-init.js` est exécuté pour créer la base de données `got_db`, ajouter l'utilisateur `jon_snow`, ainsi que créer et remplir la collection `got_seasons_collection`.
+Lors de la création du conteneur MongoDB, le fichier `/mongodb/initdb.d/mongo-init.js` est exécuté pour créer la base de données `main_db`, ajouter l'utilisateur `jon_snow`, ainsi que créer et remplir la collection `got_seasons_collection`.
 
 ## Lancer les conteneurs
 
@@ -26,7 +26,7 @@ docker exec -it mongodb bash
  Se connecter à l'instance MongoDB avec la CLI en exécutant [mongosh](https://www.mongodb.com/docs/mongodb-shell/) : 
 
 ```bash
-mongosh -port 27017 -authenticationDatabase "admin" -u "root" -p
+mongosh -port 27017 -authenticationDatabase "admin" -u "admin" -p
 ```
 
 *Le mot de passe vous sera demandé (il est défini dans le fichier `.env` dans la variable `MONGO_INITDB_ROOT_PASSWORD`).*
@@ -48,7 +48,7 @@ Si votre instance est active, elle s'y connectera. Cependant vous ne pouvez pas 
 Pour s'authentifier avec les identifiants administrateurs : 
 
 ```bash
-mongosh -port 27017 -u "root" -p
+mongosh -port 27017 -u "admin" -p
 ```
 
 *Le mot de passe vous sera demandé (il est défini dans le fichier `.env` dans la variable `MONGO_INITDB_ROOT_PASSWORD`).*
@@ -61,51 +61,108 @@ Pour se connecter à une instance MongoDB avec `mongosh` en utilisant une **URI 
 mongosh "mongodb://<username>:<password>@<host>:<port>/<database>?authSource=<authDatabase>"
 ```
 
-Supposons que vous avez un utilisateur `root` avec le mot de passe `password`, et que MongoDB est en cours d'exécution sur le port `27017` de l'hôte `localhost`. Si vous souhaitez vous connecter à la base de données `got_db` et que l'utilisateur est enregistré dans la base de données `admin`, la commande serait :
+Pour se connecter : 
 
 ```bash
-mongosh "mongodb://root:password@localhost:27017/got_db?authSource=admin"
+mongosh "mongodb://admin:password@localhost:27017/"
+```
+
+Pour se connecter à la base de donnée `admin` : 
+
+```bash
+mongosh "mongodb://admin:password@localhost:27017/admin"
+```
+
+ou 
+
+```bash
+mongosh "mongodb://admin:password@localhost:27017/admin?authSource=admin"
+```
+
+### Créer une base de données `new_db`
+
+Pour créer une base de données : 
+
+```bash
+use new_db
+```
+
+Pour vous assurer que la base de données est créée (car MongoDB ne la crée que lorsqu'il y a des données), insérez quelque chose :
+
+```javascript
+db.test_collection.insertOne({ "test": "data" })
+```
+
+Vérifiez que la base de données existe : 
+
+```bash
+show dbs
+```
+
+### Se connecter à la nouvelle base de données `new_db`
+
+Supposons que vous avez un utilisateur `admin` avec le mot de passe `password` (l'utilisateur créé dans le `compose.yaml`, qui a la rôle `root` pour la base de données `admin`), et que MongoDB est en cours d'exécution sur le port `27017` de l'hôte `localhost`. Si vous souhaitez vous connecter à la base de données `new_db` et que l'utilisateur est enregistré dans la base de données `admin`, la commande serait :
+
+```bash
+mongosh "mongodb://admin:password@localhost:27017/new_db?authSource=admin"
 ```
 
 Pour des raisons de sécurité, il est recommandé de ne pas inclure le mot de passe directement dans l'URI. Vous pouvez laisser le mot de passe vide, et `mongosh` vous invitera à le saisir :
 
 ```bash
-mongosh "mongodb://root@localhost:27017/got_db?authSource=admin"
+mongosh "mongodb://admin@localhost:27017/new_db?authSource=admin"
 ```
 
-## Optionnel : se connecter avec l'utilisateur définit dans `mongo-init.js`
+## Optionnel : se connecter à la base de donnée `main_db` définie dans `mongo-init.js`
 
-Pour se connecter avec l'utilisateur `jon_snow` défini dans `mongo-init.js` (désactivé par défaut, supprimez les commentaires pour l'activer),
+### Se connecter avec l'utilisateur `admin` (rôle `root`)
+
+Avec une URI :
 
 ```bash
-mongosh got_db -u "jon_snow" -p
+mongosh "mongodb://admin:password@localhost:27017/main_db?authSource=admin"
 ```
 
-*Vous devez ensuite saisir le mot de passe spécifié pour l'utilisateur `jon_snow` dans le fichier `mongo-init.js`.*
+Avec une commande `mongosh` : 
 
-Vous pouvez maintenant tester une requête sur la base de données :
-
-```javascript
-db.got_seasons_collection.find({}, { season : 1, year : 1 })
+```bash
+mongosh main_db --port 27017 --authenticationDatabase admin -u admin -p
 ```
 
-Alternativement, vous pouvez vous connecter avec `mongosh` et vous authentifier directement sur la base de données `got_db` en utilisant les commandes suivantes :
+### Se connecter avec l'utilisateur `your_name` définit dans `mongo-init.js`
+
+Avec une URI :
+
+```bash
+mongosh "mongodb://your_name:your_password@localhost:27017/main_db"
+```
+
+Avec une commande `mongosh` : 
+
+
+```bash
+mongosh main_db -u "your_name" -p
+```
+
+*Vous devez ensuite saisir le mot de passe spécifié pour l'utilisateur `your_name` dans le fichier `mongo-init.js`.*
+
+Alternativement, vous pouvez vous connecter avec `mongosh` et vous authentifier directement sur la base de données `main_db` en utilisant les commandes suivantes :
 
 ```bash
 mongosh
 ```
 
-Une fois connecté au shell MongoDB, basculez sur la base de données `got_db` et authentifiez-vous avec l'utilisateur `jon_snow` :
+Une fois connecté au shell MongoDB, basculez sur la base de données `main_db` et authentifiez-vous avec l'utilisateur `your_name` :
 
 ```bash
-use got_db
-db.auth("jon_snow", "ygritte")
+use main_db
+db.auth("your_name", "your_password")
 ```
 
-Vous êtes maintenant connecté en tant qu'utilisateur `jon_snow` et pouvez exprimer une requête sur la base de données, par exemple :
+Vous êtes maintenant connecté en tant qu'utilisateur `your_name` et pouvez exprimer une requête sur la base de données, par exemple :
 
 ```javascript
-db.got_seasons_collection.find({}, {season : 1, year : 1})
+db.test_collection.find()
 ```
 
 ## Pour accèder à MongoDB via mongo-express
